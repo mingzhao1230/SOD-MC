@@ -1,0 +1,16 @@
+torch==1.13.1
+torchvision==0.14.1
+numpy
+opencv-python
+Pillow
+scipy
+timm
+einops
+fvcore
+ftfy
+regex
+tqdm
+thop
+packaging
+ninja
+wheel
