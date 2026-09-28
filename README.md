@@ -1,13 +1,13 @@
 # DRMR: A Degradation-Resistant and Missing-Resilient Network for Dual-Modal Salient Object Detection
 
-Official PyTorch implementation of DRMR for robust RGB-T and RGB-D salient object detection under full-modality and missing-modality conditions. This repository provides the RGB-T training code.
+Official PyTorch implementation of DRMR for robust RGB-T and RGB-D salient object detection under full-modality and missing-modality conditions. The released datasets and checkpoints cover both RGB-T and RGB-D settings.
 
 ## Highlights
 
 - Grid-wise Language-driven Adaptive Quality Modulation (G-LAQ) estimates local RGB quality and adaptively reweights dual-modal features.
 - Reliability-Aware Modality Fusion (RAMF) uses local structural uncertainty to guide feature fusion and context modeling.
 - Spatial-Frequency Self-Distillation (SFD) transfers full-modality priors under missing-modality conditions.
-- A two-stage dual-branch training strategy supports full, RGB-only, and thermal-only inputs.
+- A two-stage dual-branch training strategy supports full, RGB-only, and auxiliary-only (thermal or depth) inputs.
 
 ## Environment
 
@@ -25,7 +25,7 @@ cd ..
 | Resource | Download | Access code |
 | --- | --- | --- |
 | Checkpoints | [Baidu Netdisk](https://pan.baidu.com/s/16fl5jbeJKeESESse6UEhnA?pwd=DRMR) | `DRMR` |
-| RGB-T dataset | [Baidu Netdisk](https://pan.baidu.com/s/1RnPUn0a0xCMSmUHh9O2kKQ?pwd=DRMR) | `DRMR` |
+| RGB-T and RGB-D datasets | [Baidu Netdisk](https://pan.baidu.com/s/1RnPUn0a0xCMSmUHh9O2kKQ?pwd=DRMR) | `DRMR` |
 
 ## Pretrained Backbone
 
@@ -38,6 +38,8 @@ models/pretrained/vmamba/vssmsmall_dp03_ckpt_epoch_238.pth
 The CLIP ViT-B/32 checkpoint is downloaded automatically on first use.
 
 ## Dataset Preparation
+
+### RGB-T
 
 Set the dataset root:
 
@@ -77,6 +79,14 @@ Each line in a split file follows this format:
 /RGB/image.jpg /GT/mask.png /T/thermal.jpg
 ```
 
+### RGB-D
+
+For RGB-D training, we combine the training sets of NJUD, NLPR, and DUTLF-D. Evaluation is performed on the test sets of NJUD, NLPR, and DUTLF-D, together with the full SIP dataset. The split files use the same three-column format, with the third path referring to the depth map:
+
+```text
+/RGB/image.jpg /GT/mask.png /depth/depth.png
+```
+
 ## Training
 
 Run the training script from the repository root:
@@ -87,27 +97,29 @@ python train_rgbt.py
 
 The default setting uses an input size of 448, a batch size of 2, and 50 epochs. Epochs 1-30 train the main branch with full RGB-T inputs. Epochs 31-50 freeze the main branch and train the control branch and zero convolutions. During Stage II, full, RGB-only, and thermal-only inputs are sampled with equal probability.
 
-Checkpoints are saved to:
+RGB-D training follows the same two-stage schedule, replacing the thermal modality with depth and using the combined NJUD, NLPR, and DUTLF-D training sets.
 
-```text
-checkpoints/Samba/rgbt_datasets/
+Use `--save_fold` to specify the checkpoint root:
+
+```bash
+python train_rgbt.py --save_fold /path/to/checkpoint_root
 ```
 
 Resume training with:
 
 ```bash
 python train_rgbt.py \
-  --resume checkpoints/Samba/rgbt_datasets/epoch_30_checkpoint.pth \
+  --resume /path/to/epoch_30_checkpoint.pth \
   --start_epoch 30
 ```
 
 ## Evaluation
 
-We use [SOD Evaluation Metrics](https://github.com/zyjwuyan/SOD_Evaluation_Metrics) to evaluate prediction maps on VT821, VT1000, and VT5000 under three conditions:
+We use [SOD Evaluation Metrics](https://github.com/zyjwuyan/SOD_Evaluation_Metrics) to evaluate prediction maps on the RGB-T benchmarks (VT821, VT1000, and VT5000) and RGB-D benchmarks (NJUD, NLPR, DUTLF-D, and SIP) under three conditions:
 
-1. Full RGB-T input
-2. Missing RGB input (thermal only)
-3. Missing thermal input (RGB only)
+1. Full dual-modal input (RGB-T or RGB-D)
+2. Missing RGB input (thermal or depth only)
+3. Missing auxiliary input (RGB only)
 
 The reported metrics are S-measure, maximum F-measure, maximum E-measure, and MAE.
 
