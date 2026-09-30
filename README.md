@@ -1,6 +1,6 @@
-# DRMR: A Degradation-Resistant and Missing-Resilient Network for Dual-Modal Salient Object Detection
+# SOD-MC
 
-Official PyTorch implementation of DRMR for robust RGB-T and RGB-D salient object detection under full-modality and missing-modality conditions. The released datasets and checkpoints cover both RGB-T and RGB-D settings.
+Official PyTorch implementation for dual-modal salient object detection under modality-complete and missing-modality conditions. The repository supports both RGB-T and RGB-D settings and provides the corresponding datasets and checkpoints.
 
 ## Highlights
 
@@ -126,9 +126,9 @@ The reported metrics are S-measure, maximum F-measure, maximum E-measure, and MA
 ## Repository Structure
 
 ```text
-DRMR/
+SOD-MC/
 ├── clip/                    # CLIP implementation
-├── models/                  # DRMR network modules
+├── models/                  # Dual-modal SOD network modules
 ├── selective_scan/          # CUDA selective-scan extension
 ├── utils/                   # Utility functions
 ├── train_rgbt.py            # Two-stage RGB-T training
